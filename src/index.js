@@ -1,18 +1,37 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
-import { createStore } from 'redux'
-import toDoApp from './reducers'
+import { BrowserRouter } from 'react-router-dom'
+
+import { createStore, applyMiddleware, compose } from 'redux'
 import App from './App'
 
-const store = createStore(toDoApp)
+import createSagaMiddleware from 'redux-saga'
+import { loadToDoList } from './actions'
+import toDoApp from './reducers'
+import rootSaga from './sagas'
+
+const sagaMiddleware = createSagaMiddleware()
+
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
+
+const store = createStore(
+    toDoApp,
+    composeEnhancers(applyMiddleware(sagaMiddleware))
+)
+
+sagaMiddleware.run(rootSaga)
+
+store.dispatch(loadToDoList())
 
 ReactDOM.render(
-    <React.StrictMode>
-        <Provider store={store}>
+    // <React.StrictMode>
+    <Provider store={store}>
+        <BrowserRouter>
             <App />
-        </Provider>
-    </React.StrictMode>,
+        </BrowserRouter>
+    </Provider>,
+    // </React.StrictMode>,
     document.getElementById('root')
 )
 
